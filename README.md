@@ -7,7 +7,7 @@
 
 ## 📋 Descrizione
 
-RIABreast è un’applicazione web e mobile (Progressive Web App) dedicata alla riabilitazione post-operatoria per donne mastectomizzate.  
+RIABreast è un’applicazione web e mobile (Progressive Web App) dedicata alla riabilitazione post-operatoria per pazienti mastectomizzati.  
 Permette alle pazienti di:
 
 - Seguire un percorso guidato in video-lezioni.
