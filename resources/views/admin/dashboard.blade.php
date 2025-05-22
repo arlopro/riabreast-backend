@@ -153,7 +153,7 @@
                                                                         </tr>
                                                                     @endforeach
                                                                 @else
-                                                                    @for($n = 1; $n <= 10; $n++)
+                                                                    @for($n = 0; $n <= 10; $n++)
                                                                         <tr>
                                                                             <td>{{ $n }}</td>
                                                                             <td class="text-end">{{ $q['distribution'][$n] ?? 0 }}</td>

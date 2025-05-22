@@ -113,7 +113,7 @@ class DashboardController extends Controller
                 'title'              => $title,
                 'users'              => $userCount,
                 'sessions'           => $sessData,
-                'questionnaires'     => $questionnairesPerPeriod->get($title, 0), // ← badge
+                'questionnaires'     => $questionnairesPerPeriod->get($title, 0),
                 'avg_daily_sessions' => $avgDaily,
                 'questions'          => $questions,
             ];
