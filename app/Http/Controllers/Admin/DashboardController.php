@@ -57,13 +57,12 @@ class DashboardController extends Controller
                 $r->title => ['total' => $r->total, 'completed' => $r->completed]
             ]);
 
-        // conteggio questionari inviati = sessioni completate **e** che hanno almeno un answer
-        $questionnairesPerPeriod = RehabSession::where('is_completed', true)
-            ->whereHas('answers')
-            ->with('period')
-            ->get()
-            ->groupBy(fn($s) => $s->period->title)
-            ->map->count();
+        // conteggio questionari inviati = sessioni con almeno 1 risposta
+        $questionnairesPerPeriod = RehabAnswer::join('rehab_sessions','rehab_answers.rehab_session_id','=','rehab_sessions.id')
+            ->join('rehab_periods','rehab_sessions.rehab_period_id','=','rehab_periods.id')
+            ->select('rehab_periods.title', DB::raw('COUNT(DISTINCT rehab_answers.rehab_session_id) AS count'))
+            ->groupBy('rehab_periods.title')
+            ->pluck('count','title');
 
         // — 3. Costruisco l’array periods
         $periods = RehabPeriod::orderBy('order')->get()->map(function($period) use ($usersPerPeriod, $sessionsStats, $questionnairesPerPeriod) {
@@ -94,7 +93,6 @@ class DashboardController extends Controller
             $questions = $period->questions->map(function($q) use ($period) {
                 $dist = RehabAnswer::join('rehab_sessions','rehab_answers.rehab_session_id','=','rehab_sessions.id')
                     ->where('rehab_sessions.rehab_period_id', $period->id)
-                    ->where('rehab_sessions.is_completed', true)           // ← filtro
                     ->where('rehab_answers.rehab_question_id', $q->id)
                     ->select('rehab_answers.answer', DB::raw('COUNT(*) as count'))
                     ->groupBy('rehab_answers.answer')
@@ -102,12 +100,12 @@ class DashboardController extends Controller
                     ->toArray();
 
                 return [
-                    'id'            => $q->id,
-                    'title'         => $q->title,
-                    'question'      => $q->question,
-                    'type'          => $q->type,
-                    'options'       => $q->type === 'choice' ? $q->options : null,
-                    'distribution'  => $dist,
+                    'id'           => $q->id,
+                    'title'        => $q->title,
+                    'question'     => $q->question,
+                    'type'         => $q->type,
+                    'options'      => $q->type === 'choice' ? $q->options : null,
+                    'distribution' => $dist,
                 ];
             });
 
