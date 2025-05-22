@@ -57,12 +57,13 @@ class DashboardController extends Controller
                 $r->title => ['total' => $r->total, 'completed' => $r->completed]
             ]);
 
-        // conteggio questionari inviati = sessioni completate
+        // conteggio questionari inviati = sessioni completate **e** che hanno almeno un answer
         $questionnairesPerPeriod = RehabSession::where('is_completed', true)
-            ->join('rehab_periods','rehab_sessions.rehab_period_id','=','rehab_periods.id')
-            ->select('rehab_periods.title', DB::raw('COUNT(*) AS count'))
-            ->groupBy('rehab_periods.title')
-            ->pluck('count','title');
+            ->whereHas('answers')
+            ->with('period')
+            ->get()
+            ->groupBy(fn($s) => $s->period->title)
+            ->map->count();
 
         // — 3. Costruisco l’array periods
         $periods = RehabPeriod::orderBy('order')->get()->map(function($period) use ($usersPerPeriod, $sessionsStats, $questionnairesPerPeriod) {
