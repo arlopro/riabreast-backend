@@ -216,6 +216,20 @@ class RehabController extends Controller
         return response()->json(['message' => 'Tornato al periodo precedente']);
     }
 
+    public function dailySessions(Request $request)
+    {
+        $user = $request->user();
+
+        $data = $user->rehabSessions()
+            ->selectRaw('DATE(started_at) as date, COUNT(*) as count')
+            ->groupByRaw('DATE(started_at)')
+            ->orderByRaw('DATE(started_at)')
+            ->get()
+            ->map(fn($row) => ['date' => $row->date, 'count' => (int) $row->count]);
+
+        return response()->json($data);
+    }
+
     public function extras()
     {
         return response()->json(RehabExtra::all());
