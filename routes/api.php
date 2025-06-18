@@ -25,9 +25,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('questionnaire', 'questionnaire');
         Route::get('extras', 'extras');
         Route::get('extra/{id}', 'extraDetail');
+        Route::get('sessions/daily', 'dailySessions');
 
         Route::post('period/previous', 'goToPreviousPeriod');
-        Route::get('sessions/daily', 'dailySessions');
         Route::post('questionnaire/submit', 'submitAnswers');
         Route::post('session/start', 'startSession');
         Route::post('session/end', 'endSession');
