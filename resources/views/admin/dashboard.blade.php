@@ -82,6 +82,40 @@
 
         {{-- PERIODI TAB --}}
         <div class="tab-pane fade" id="periodi" role="tabpanel">
+            <form method="GET" class="row g-3 align-items-end mb-4">
+                <div class="col-md-3">
+                    <label class="form-label">Fascia d'età</label>
+                    <select name="age_range" class="form-select">
+                        <option value="">Tutte</option>
+                        @foreach($ageOptions as $opt)
+                            <option value="{{ $opt }}" @selected($ageRange === $opt)>{{ $opt }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Tipo intervento</label>
+                    <select name="surgery_type" class="form-select">
+                        <option value="">Tutti</option>
+                        @foreach($surgeryTypeOptions as $opt)
+                            <option value="{{ $opt }}" @selected($surgeryType === $opt)>{{ $opt }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Tempo dall'intervento</label>
+                    <select name="surgery_time" class="form-select">
+                        <option value="">Tutti</option>
+                        @foreach($surgeryTimeOptions as $opt)
+                            <option value="{{ $opt }}" @selected($surgeryTime === $opt)>{{ $opt }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md-3 d-flex">
+                    <button type="submit" class="btn btn-primary me-2">Filtra</button>
+                    <a href="{{ route('dashboard') }}" class="btn btn-secondary">Reset</a>
+                </div>
+            </form>
+
             <div class="row g-4">
                 @foreach($periods as $idx => $p)
                     <div class="col-12">
