@@ -29,7 +29,7 @@ class AuthController extends Controller
             return response()->json(['error' => $validator->errors()], 422);
         }
 
-        $pin = $this->generateUniquePin();
+        $pin = '123456'; //$this->generateUniquePin();
 
         $user = User::create([
             'role' => RoleEnum::USER->value,
