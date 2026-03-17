@@ -29,11 +29,12 @@ class AuthController extends Controller
             return response()->json(['error' => $validator->errors()], 422);
         }
 
-        $pin = '123456'; //$this->generateUniquePin();
+        $pin = $this->generateUniquePin();
 
         $user = User::create([
             'role' => RoleEnum::USER->value,
-            'pin' => Hash::make($pin), // ✅ salvato in modo sicuro
+            'pin' => Hash::make($pin),
+            'pin_hmac' => User::hmacPin($pin),
             'data' => [
                 'age_range' => $request->age_range,
                 'surgery_time' => $request->surgery_time,
@@ -82,10 +83,24 @@ class AuthController extends Controller
             return response()->json(['error' => $validator->errors()], 422);
         }
 
-        // Cerchiamo tra gli utenti USER
-        $user = User::where('role', RoleEnum::USER->value)->get()->first(function ($user) use ($request) {
-            return Hash::check($request->pin, $user->pin);
-        });
+        $hmac = User::hmacPin($request->pin);
+
+        // Lookup diretto tramite HMAC (O(1) con indice)
+        $user = User::where('role', RoleEnum::USER->value)
+            ->where('pin_hmac', $hmac)
+            ->first();
+
+        // Fallback per utenti esistenti che non hanno ancora pin_hmac (lazy migration)
+        if (!$user) {
+            $user = User::where('role', RoleEnum::USER->value)
+                ->whereNull('pin_hmac')
+                ->get()
+                ->first(fn ($u) => Hash::check($request->pin, $u->pin));
+
+            if ($user) {
+                $user->update(['pin_hmac' => $hmac]);
+            }
+        }
 
         if (!$user) {
             return response()->json(['error' => 'PIN non valido'], 401);
@@ -103,9 +118,8 @@ class AuthController extends Controller
     {
         do {
             $plainPin = str_pad(mt_rand(0, 999999), 6, '0', STR_PAD_LEFT);
-            $used = User::all()->contains(function ($user) use ($plainPin) {
-                return Hash::check($plainPin, $user->pin);
-            });
+            $hmac = User::hmacPin($plainPin);
+            $used = User::where('pin_hmac', $hmac)->exists();
         } while ($used);
 
         return $plainPin;

@@ -18,7 +18,7 @@ class User extends Authenticatable
      *
      * @var list<string>
      */
-    protected $fillable = ['role', 'email', 'password', 'pin', 'data'];
+    protected $fillable = ['role', 'email', 'password', 'pin', 'pin_hmac', 'data'];
 
 
     /**
@@ -34,10 +34,18 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
-        'pin' => 'hashed',
         'data' => 'array',
         'role' => RoleEnum::class,
     ];
+
+    /**
+     * Genera l'HMAC-SHA256 di un PIN usando la APP_KEY come segreto.
+     * Deterministico: stesso input → stesso output → lookup O(1) nel DB.
+     */
+    public static function hmacPin(string $pin): string
+    {
+        return hash_hmac('sha256', $pin, config('app.key'));
+    }
 
     public function rehabSessions()
     {
